@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiji Admin Management</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for clean icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #fdba74; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f97316; }
+        .toast-enter { transform: translateY(100%); opacity: 0; }
+        .toast-show { transform: translateY(0); opacity: 1; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .toast-exit { transform: translateY(100%); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-brand-200">
+
+    <!-- Top Application Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 py-3 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+            <button id="sidebarToggle" onclick="toggleSidebar()" class="p-2 rounded-xl text-slate-600 hover:text-brand-600 hover:bg-brand-50 transition-colors focus:outline-none" title="Toggle Navigation">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+            <h1 class="text-xl font-bold text-slate-800 tracking-tight">Fiji Admin Management</h1>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="openModal('backupModal')" class="px-3 py-1.5 text-xs font-semibold rounded-xl border border-brand-200 text-brand-700 bg-brand-50 hover:bg-brand-100 transition-colors flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-arrows-rotate text-brand-500"></i>
+                <span class="hidden sm:inline">Export / Import Data</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex flex-1 overflow-hidden relative">
+
+        <!-- Hideable Sidebar Navigation Panel -->
+        <aside id="mainSidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 transition-all duration-300 z-20 absolute md:relative h-full shadow-lg md:shadow-none">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Admin Modules</span>
+            </div>
+            <nav class="p-3 space-y-1.5 flex-1">
+                <button id="navStockBtn" onclick="switchMainModule('stock')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium text-sm text-brand-700 bg-brand-50 shadow-sm transition-all text-left">
+                    <i class="fa-solid fa-boxes-stacked text-brand-500 text-base"></i>
+                    <span>Stock Management</span>
+                </button>
+                <button id="navSevaBtn" onclick="switchMainModule('seva')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-left">
+                    <i class="fa-solid fa-plane-departure text-slate-400 text-base"></i>
+                    <span>Seva Trips</span>
+                </button>
+            </nav>
+            <div class="p-4 border-t border-slate-100 text-xs text-slate-400 text-center">
+                Fiji Admin System v2.0
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col overflow-y-auto bg-slate-50 p-4 md:p-6 space-y-6">
+
+            <!-- MODULE 1: STOCK MANAGEMENT -->
+            <section id="stockModule" class="space-y-6">
+                
+                <!-- Stock Top Navigation Bar (Clean Names, No A/B Labels) -->
+                <div class="bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-1">
+                    <button id="tabInventoryBtn" onclick="switchStockTab('inventory')" class="flex-1 min-w-[100px] py-2.5 px-4 rounded-xl text-sm font-semibold transition-all text-white bg-brand-500 shadow-sm">
+                        Inventory
+                    </button>
+                    <button id="tabKitsBtn" onclick="switchStockTab('kits')" class="flex-1 min-w-[100px] py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+                        Kits
+                    </button>
+                    <button id="tabToOrderBtn" onclick="switchStockTab('toOrder')" class="flex-1 min-w-[100px] py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center justify-center space-x-2">
+                        <span>To Order</span>
+                        <span id="orderBadge" class="hidden bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                    </button>
+                    <button id="tabLocationsBtn" onclick="switchStockTab('locations')" class="flex-1 min-w-[100px] py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+                        Locations
+                    </button>
+                </div>
+
+                <!-- Action Bar (Placed Below Top Navigation Bar) -->
+                <div id="stockActionBar" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+                    <div class="flex flex-1 flex-col sm:flex-row gap-3 w-full md:w-auto">
+                        <!-- Search Bar -->
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="searchInput" oninput="renderCurrentStockTab()" placeholder="Search items..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                        </div>
+                        <!-- Filter Dropdown -->
+                        <select id="categoryFilter" onchange="renderCurrentStockTab()" class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
+                            <option value="ALL">All Categories</option>
+                        </select>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                        <button onclick="openCategoryModal()" class="px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all flex items-center space-x-1.5">
+                            <i class="fa-solid fa-tags text-slate-500"></i>
+                            <span>Manage Categories</span>
+                        </button>
+                        <button onclick="openItemModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 transition-all shadow-md shadow-brand-500/20 flex items-center space-x-1.5">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Add New Item</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 1: INVENTORY TAB -->
+                <div id="tabInventory" class="space-y-4">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        <th class="py-3.5 px-4">Item Name</th>
+                                        <th class="py-3.5 px-4">Category</th>
+                                        <th class="py-3.5 px-4">Quantity</th>
+                                        <th class="py-3.5 px-4">Location</th>
+                                        <th class="py-3.5 px-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-sm">
+                                    <!-- Dynamic Rows Rendered Here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="inventoryEmptyState" class="hidden p-8 text-center text-slate-400">
+                            <i class="fa-solid fa-box-open text-4xl mb-2 text-slate-300"></i>
+                            <p>No inventory items found matching criteria.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: KITS TAB -->
+                <div id="tabKits" class="hidden space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-base font-bold text-slate-800">Assembly Kits</h2>
+                        <button onclick="openKitModal()" class="px-3.5 py-2 rounded-xl text-sm font-semibold text-brand-700 bg-brand-50 border border-brand-200 hover:bg-brand-100 transition-all flex items-center space-x-1.5">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Create New Kit</span>
+                        </button>
+                    </div>
+
+                    <div id="kitsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Kit Cards Rendered Here -->
+                    </div>
+                    <div id="kitsEmptyState" class="hidden bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400">
+                        <i class="fa-solid fa-layer-group text-4xl mb-2 text-slate-300"></i>
+                        <p>No assembly kits created yet.</p>
+                    </div>
+                </div>
+
+                <!-- TAB 3: TO ORDER TAB -->
+                <div id="tabToOrder" class="hidden space-y-4">
+                    <div class="flex justify-between items-center bg-brand-50 border border-brand-100 p-4 rounded-2xl">
+                        <div>
+                            <h2 class="text-base font-bold text-brand-900">Items to Order</h2>
+                            <p class="text-xs text-brand-700">Check off orders once delivered to add quantity directly back to inventory stock.</p>
+                        </div>
+                        <button onclick="openManualOrderModal()" class="px-3.5 py-2 rounded-xl text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 transition-all shadow-sm">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Manual Order
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        <th class="py-3.5 px-4">Item Name</th>
+                                        <th class="py-3.5 px-4">Order Quantity</th>
+                                        <th class="py-3.5 px-4 text-right">Actions / Tick Off</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="toOrderTableBody" class="divide-y divide-slate-100 text-sm">
+                                    <!-- Dynamic Order Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="toOrderEmptyState" class="hidden p-8 text-center text-slate-400">
+                            <i class="fa-solid fa-circle-check text-4xl mb-2 text-emerald-400"></i>
+                            <p>No pending orders! All stock is fulfilled.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: LOCATIONS TAB -->
+                <div id="tabLocations" class="hidden space-y-4">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-4 flex justify-between items-center">
+                        <h2 class="text-base font-bold text-slate-800">Storage Locations Breakdown</h2>
+                        <span class="text-xs text-slate-500">Grouped automatically by location tags</span>
+                    </div>
+
+                    <div id="locationsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Location Cards -->
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- MODULE 2: SEVA TRIPS MODULE -->
+            <section id="sevaModule" class="hidden space-y-6">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Seva Travel & Trip Logs</h2>
+                        <p class="text-xs text-slate-500">Track volunteer departure dates and basic ticket/booking information.</p>
+                    </div>
+                    <button onclick="openSevaModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 transition-all shadow-md shadow-brand-500/20 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Log Seva Trip</span>
+                    </button>
+                </div>
+
+                <!-- Seva Trips Table / Cards -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    <th class="py-3.5 px-4">Volunteer Name</th>
+                                    <th class="py-3.5 px-4">Travel Dates</th>
+                                    <th class="py-3.5 px-4">Ticket & Booking Details</th>
+                                    <th class="py-3.5 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sevaTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic Seva Trip Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="sevaEmptyState" class="hidden p-8 text-center text-slate-400">
+                        <i class="fa-solid fa-plane text-4xl mb-2 text-slate-300"></i>
+                        <p>No Seva trips logged yet.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Modal 1: Add/Edit Item (Stock) -->
+    <div id="itemModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="itemModalTitle" class="text-lg font-bold text-slate-800">Add Inventory Item</h3>
+                <button onclick="closeModal('itemModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="itemForm" onsubmit="saveItem(event)" class="space-y-3">
+                <input type="hidden" id="itemId">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Item Name</label>
+                    <input type="text" id="itemName" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Category</label>
+                    <select id="itemCategory" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Current Quantity</label>
+                    <input type="number" id="itemQuantity" min="0" value="0" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Storage Location</label>
+                    <input type="text" id="itemLocation" placeholder="e.g. Mandir Cupboard B, Room 102" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div class="flex justify-end space-x-2 pt-3 border-t">
+                    <button type="button" onclick="closeModal('itemModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 shadow-md shadow-brand-500/20">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Manage Categories -->
+    <div id="categoryModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-slate-800">Manage Categories</h3>
+                <button onclick="closeModal('categoryModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="addCategory(event)" class="flex space-x-2">
+                <input type="text" id="newCategoryInput" placeholder="New Category Name" required class="flex-1 px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                <button type="submit" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 shrink-0">Add Category</button>
+            </form>
+            <div class="space-y-2 max-h-60 overflow-y-auto pt-2" id="categoriesList">
+                <!-- Dynamic categories list with delete options -->
+            </div>
+            <div class="flex justify-end border-t pt-3">
+                <button type="button" onclick="closeModal('categoryModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Kit Creator -->
+    <div id="kitModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-slate-800">Create Assembly Kit</h3>
+                <button onclick="closeModal('kitModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="kitForm" onsubmit="saveKit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kit Name</label>
+                    <input type="text" id="kitName" placeholder="e.g. Festival Welcome Kit" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Included Inventory Items</label>
+                    <div id="kitItemsSelection" class="space-y-2 max-h-48 overflow-y-auto border border-slate-200 p-2 rounded-xl">
+                        <!-- Populated dynamically with checkboxes -->
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 border-t pt-3">
+                    <button type="button" onclick="closeModal('kitModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600">Save Kit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 4: Seva Trip Logger -->
+    <div id="sevaModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="sevaModalTitle" class="text-lg font-bold text-slate-800">Log Seva Trip</h3>
+                <button onclick="closeModal('sevaModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="sevaForm" onsubmit="saveSevaTrip(event)" class="space-y-3">
+                <input type="hidden" id="sevaId">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Volunteer Name</label>
+                    <input type="text" id="sevaVolunteer" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Departure Date</label>
+                        <input type="date" id="sevaDeparture" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Return Date</label>
+                        <input type="date" id="sevaReturn" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ticket / Booking Details</label>
+                    <textarea id="sevaTicketDetails" rows="3" placeholder="Flight details, PNR code, ticket notes..." required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2 pt-3 border-t">
+                    <button type="button" onclick="closeModal('sevaModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 shadow-md shadow-brand-500/20">Save Trip Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 5: Manual Order Add -->
+    <div id="manualOrderModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-slate-800">Add Order Request</h3>
+                <button onclick="closeModal('manualOrderModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="manualOrderForm" onsubmit="saveManualOrder(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Item</label>
+                    <select id="manualOrderSelect" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Quantity To Order</label>
+                    <input type="number" id="manualOrderQty" min="1" value="1" required class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div class="flex justify-end space-x-2 pt-3 border-t">
+                    <button type="button" onclick="closeModal('manualOrderModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600">Add Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 6: Export / Import Data -->
+    <div id="backupModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-slate-800">Export / Import System Data</h3>
+                <button onclick="closeModal('backupModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p class="text-xs font-bold text-slate-700 uppercase mb-1">Backup Data</p>
+                    <p class="text-xs text-slate-500 mb-2">Download a copy of all current inventory, kits, orders, and trip logs.</p>
+                    <button onclick="exportData()" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs rounded-xl transition-all">Download JSON Backup</button>
+                </div>
+
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p class="text-xs font-bold text-slate-700 uppercase mb-1">Restore Data</p>
+                    <p class="text-xs text-slate-500 mb-2">Upload a previously exported JSON backup file.</p>
+                    <input type="file" id="importFileInput" accept=".json" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+                    <button onclick="importData()" class="w-full mt-2 py-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-xl transition-all">Restore From File</button>
+                </div>
+            </div>
+            <div class="flex justify-end border-t pt-3">
+                <button type="button" onclick="closeModal('backupModal')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- APPLICATION LOGIC -->
+    <script>
+        // State Storage Keys
+        const STORAGE_KEY = 'fiji_admin_data_v2';
+
+        // Default Initial Data
+        let appData = {
+            categories: ['Puja Items', 'Decorations', 'Kitchen / Catering', 'General Admin'],
+            inventory: [
+                { id: '1', name: 'Brass Diyas', category: 'Puja Items', quantity: 25, location: 'Mandir Main Storage' },
+                { id: '2', name: 'Silk Garland Strings', category: 'Decorations', quantity: 12, location: 'Cupboard A' },
+                { id: '3', name: 'Stainless Steel Thali Sets', category: 'Kitchen / Catering', quantity: 40, location: 'Kitchen Storage' }
+            ],
+            toOrder: [
+                { itemId: '2', orderQty: 10 }
+            ],
+            kits: [
+                { id: 'k1', name: 'Standard Puja Kit', items: ['Brass Diyas', 'Silk Garland Strings'], quantity: 5 }
+            ],
+            sevaTrips: [
+                { id: 's1', volunteer: 'Ramesh Patel', departure: '2026-11-05', return: '2026-11-20', ticketDetails: 'FJ Flight 810 - Booking Ref: #FJ98231' }
+            ]
+        };
+
+        let currentMainModule = 'stock'; // 'stock' or 'seva'
+        let currentStockTab = 'inventory'; // 'inventory', 'kits', 'toOrder', 'locations'
+
+        // Load persisted data
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    appData = JSON.parse(stored);
+                } catch(e) {
+                    console.error('Failed to parse local data', e);
+                }
+            }
+            saveData();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            updateOrderBadge();
+        }
+
+        // UI Toast Feedback
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-600 text-white';
+            const icon = type === 'success' ? 'fa-circle-check text-brand-400' : 'fa-circle-exclamation';
+
+            toast.className = `toast-enter ${bgColor} px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-3 text-sm pointer-events-auto min-w-[240px]`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-lg"></i>
+                <span class="font-medium">${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-show');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.remove('toast-show');
+                toast.classList.add('toast-exit');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Sidebar Navigation Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('mainSidebar');
+            sidebar.classList.toggle('hidden');
+        }
+
+        // Switch Top Level Modules
+        function switchMainModule(module) {
+            currentMainModule = module;
+            const stockMod = document.getElementById('stockModule');
+            const sevaMod = document.getElementById('sevaModule');
+            const navStockBtn = document.getElementById('navStockBtn');
+            const navSevaBtn = document.getElementById('navSevaBtn');
+
+            if (module === 'stock') {
+                stockMod.classList.remove('hidden');
+                sevaMod.classList.add('hidden');
+                
+                navStockBtn.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium text-sm text-brand-700 bg-brand-50 shadow-sm transition-all text-left";
+                navSevaBtn.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-left";
+                
+                renderCurrentStockTab();
+            } else {
+                stockMod.classList.add('hidden');
+                sevaMod.classList.remove('hidden');
+
+                navSevaBtn.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium text-sm text-brand-700 bg-brand-50 shadow-sm transition-all text-left";
+                navStockBtn.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-left";
+
+                renderSevaTrips();
+            }
+        }
+
+        // Switch Tabs within Stock Module
+        function switchStockTab(tab) {
+            currentStockTab = tab;
+            const tabs = ['inventory', 'kits', 'toOrder', 'locations'];
+            
+            tabs.forEach(t => {
+                const tabEl = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                const btnEl = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
+                
+                if (t === tab) {
+                    tabEl.classList.remove('hidden');
+                    btnEl.className = "flex-1 min-w-[100px] py-2.5 px-4 rounded-xl text-sm font-semibold transition-all text-white bg-brand-500 shadow-sm flex items-center justify-center space-x-2";
+                } else {
+                    tabEl.classList.add('hidden');
+                    btnEl.className = "flex-1 min-w-[100px] py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center justify-center space-x-2";
+                }
+            });
+
+            // Toggle Action Bar visibility depending on sub-tab
+            const actionBar = document.getElementById('stockActionBar');
+            if (tab === 'inventory' || tab === 'locations') {
+                actionBar.classList.remove('hidden');
+            } else {
+                actionBar.classList.add('hidden');
+            }
+
+            renderCurrentStockTab();
+        }
+
+        function renderCurrentStockTab() {
+            populateCategoriesDropdowns();
+            if (currentStockTab === 'inventory') renderInventory();
+            else if (currentStockTab === 'kits') renderKits();
+            else if (currentStockTab === 'toOrder') renderToOrder();
+            else if (currentStockTab === 'locations') renderLocations();
+        }
+
+        // Populate Categories in selects
+        function populateCategoriesDropdowns() {
+            const filterSelect = document.getElementById('categoryFilter');
+            const itemCategorySelect = document.getElementById('itemCategory');
+            
+            const currentFilterVal = filterSelect.value;
+            
+            filterSelect.innerHTML = '<option value="ALL">All Categories</option>';
+            itemCategorySelect.innerHTML = '';
+
+            appData.categories.forEach(cat => {
+                filterSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+                itemCategorySelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            filterSelect.value = currentFilterVal || 'ALL';
+        }
+
+        // RENDER: Inventory Tab
+        function renderInventory() {
+            const tbody = document.getElementById('inventoryTableBody');
+            const emptyState = document.getElementById('inventoryEmptyState');
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            tbody.innerHTML = '';
+
+            const filtered = appData.inventory.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(query) || item.location.toLowerCase().includes(query);
+                const matchesCategory = categoryFilter === 'ALL' || item.category === categoryFilter;
+                return matchesSearch && matchesCategory;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-slate-800">${escapeHtml(item.name)}</td>
+                    <td class="py-3 px-4"><span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium">${escapeHtml(item.category)}</span></td>
+                    <td class="py-3 px-4 font-bold ${item.quantity === 0 ? 'text-red-500' : 'text-slate-800'}">${item.quantity}</td>
+                    <td class="py-3 px-4 text-slate-600 text-xs"><i class="fa-solid fa-location-dot text-brand-400 mr-1"></i>${escapeHtml(item.location)}</td>
+                    <td class="py-3 px-4 text-right space-x-1">
+                        <button onclick="addToOrder('${item.id}')" class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl font-semibold text-xs transition-colors border border-brand-200">
+                            <i class="fa-solid fa-cart-plus mr-1"></i> Order +
+                        </button>
+                        <button onclick="openItemModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-slate-700 transition-colors" title="Edit">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="deleteItem('${item.id}')" class="p-1.5 text-slate-400 hover:text-red-600 transition-colors" title="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Add to order list directly from Inventory table
+        function addToOrder(itemId) {
+            const existingOrder = appData.toOrder.find(o => o.itemId === itemId);
+            const item = appData.inventory.find(i => i.id === itemId);
+            
+            if (existingOrder) {
+                existingOrder.orderQty += 1;
+            } else {
+                appData.toOrder.push({ itemId: itemId, orderQty: 1 });
+            }
+            saveData();
+            showToast(`Added +1 "${item.name}" to Order list`);
+        }
+
+        // RENDER: To Order Tab
+        function renderToOrder() {
+            const tbody = document.getElementById('toOrderTableBody');
+            const emptyState = document.getElementById('toOrderEmptyState');
+            tbody.innerHTML = '';
+
+            if (appData.toOrder.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            appData.toOrder.forEach((order, index) => {
+                const item = appData.inventory.find(i => i.id === order.itemId);
+                const itemName = item ? item.name : 'Custom / Unlisted Item';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-semibold text-slate-800">${escapeHtml(itemName)}</td>
+                    <td class="py-3.5 px-4">
+                        <input type="number" min="1" value="${order.orderQty}" onchange="updateOrderQuantity(${index}, this.value)" class="w-20 px-2.5 py-1 border border-slate-200 rounded-lg text-sm font-semibold">
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                        <button onclick="deliverOrder(${index})" class="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold text-xs shadow-sm transition-all flex items-center space-x-1.5 ml-auto">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Mark Received & Add to Stock</span>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateOrderQuantity(index, val) {
+            const num = parseInt(val) || 1;
+            appData.toOrder[index].orderQty = num;
+            saveData();
+        }
+
+        // Tick off order -> Increase main inventory stock & remove order
+        function deliverOrder(index) {
+            const order = appData.toOrder[index];
+            const item = appData.inventory.find(i => i.id === order.itemId);
+
+            if (item) {
+                item.quantity += order.orderQty;
+                showToast(`Added ${order.orderQty} units to "${item.name}" stock!`);
+            } else {
+                showToast('Order cleared');
+            }
+
+            appData.toOrder.splice(index, 1);
+            saveData();
+            renderToOrder();
+        }
+
+        function updateOrderBadge() {
+            const badge = document.getElementById('orderBadge');
+            const total = appData.toOrder.reduce((acc, o) => acc + o.orderQty, 0);
+            if (total > 0) {
+                badge.textContent = total;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // RENDER: Kits Tab
+        function renderKits() {
+            const grid = document.getElementById('kitsGrid');
+            const emptyState = document.getElementById('kitsEmptyState');
+            grid.innerHTML = '';
+
+            if (appData.kits.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            appData.kits.forEach(kit => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4";
+                
+                const itemsList = kit.items.map(i => `<li class="text-xs text-slate-600 flex items-center"><i class="fa-solid fa-check text-brand-500 mr-1.5 text-[10px]"></i>${escapeHtml(i)}</li>`).join('');
+
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-slate-800 text-base">${escapeHtml(kit.name)}</h3>
+                            <button onclick="deleteKit('${kit.id}')" class="text-slate-300 hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                        <ul class="space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            ${itemsList}
+                        </ul>
+                    </div>
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500 uppercase">Assembled Count:</span>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="adjustKitQty('${kit.id}', -1)" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-slate-700 text-base flex items-center justify-center transition-colors">-</button>
+                            <span class="font-bold text-slate-800 text-base min-w-[24px] text-center">${kit.quantity}</span>
+                            <button onclick="adjustKitQty('${kit.id}', 1)" class="w-8 h-8 rounded-xl bg-brand-500 hover:bg-brand-600 font-bold text-white text-base flex items-center justify-center shadow-sm transition-colors">+</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function adjustKitQty(kitId, delta) {
+            const kit = appData.kits.find(k => k.id === kitId);
+            if (kit) {
+                kit.quantity = Math.max(0, kit.quantity + delta);
+                saveData();
+                renderKits();
+            }
+        }
+
+        function deleteKit(kitId) {
+            appData.kits = appData.kits.filter(k => k.id !== kitId);
+            saveData();
+            renderKits();
+            showToast('Kit removed');
+        }
+
+        // RENDER: Locations Tab
+        function renderLocations() {
+            const container = document.getElementById('locationsList');
+            container.innerHTML = '';
+
+            const locationsMap = {};
+
+            appData.inventory.forEach(item => {
+                const loc = item.location.trim() || 'Unassigned Location';
+                if (!locationsMap[loc]) locationsMap[loc] = [];
+                locationsMap[loc].push(item);
+            });
+
+            const locKeys = Object.keys(locationsMap);
+            if (locKeys.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center text-slate-400 py-8">No locations registered yet. Add inventory items with locations.</div>`;
+                return;
+            }
+
+            locKeys.forEach(locName => {
+                const items = locationsMap[locName];
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3";
+
+                let itemListHtml = items.map(i => `
+                    <div class="flex justify-between items-center py-1.5 border-b border-slate-50 last:border-0 text-xs">
+                        <span class="font-medium text-slate-700">${escapeHtml(i.name)}</span>
+                        <span class="font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-700">${i.quantity} units</span>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-2 border-b border-slate-100 pb-2">
+                        <i class="fa-solid fa-location-dot text-brand-500"></i>
+                        <h3 class="font-bold text-slate-800 text-sm">${escapeHtml(locName)}</h3>
+                    </div>
+                    <div>
+                        ${itemListHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // RENDER: Seva Trips Module
+        function renderSevaTrips() {
+            const tbody = document.getElementById('sevaTableBody');
+            const emptyState = document.getElementById('sevaEmptyState');
+            tbody.innerHTML = '';
+
+            if (appData.sevaTrips.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            appData.sevaTrips.forEach(trip => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-bold text-slate-800">${escapeHtml(trip.volunteer)}</td>
+                    <td class="py-3.5 px-4 text-xs font-semibold text-slate-600">
+                        <span class="text-brand-600">${trip.departure}</span> &rarr; <span>${trip.return}</span>
+                    </td>
+                    <td class="py-3.5 px-4 text-xs text-slate-600 whitespace-pre-line">${escapeHtml(trip.ticketDetails)}</td>
+                    <td class="py-3.5 px-4 text-right space-x-1">
+                        <button onclick="openSevaModal('${trip.id}')" class="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteSevaTrip('${trip.id}')" class="p-1.5 text-slate-400 hover:text-red-600 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // SAVE Item (Modal)
+        function saveItem(e) {
+            e.preventDefault();
+            const id = document.getElementById('itemId').value;
+            const name = document.getElementById('itemName').value.trim();
+            const category = document.getElementById('itemCategory').value;
+            const quantity = parseInt(document.getElementById('itemQuantity').value) || 0;
+            const location = document.getElementById('itemLocation').value.trim();
+
+            if (id) {
+                const item = appData.inventory.find(i => i.id === id);
+                if (item) {
+                    item.name = name;
+                    item.category = category;
+                    item.quantity = quantity;
+                    item.location = location;
+                }
+            } else {
+                appData.inventory.push({
+                    id: Date.now().toString(),
+                    name,
+                    category,
+                    quantity,
+                    location
+                });
+            }
+
+            saveData();
+            closeModal('itemModal');
+            renderInventory();
+            showToast(id ? 'Item updated' : 'New item added');
+        }
+
+        function openItemModal(itemId = null) {
+            populateCategoriesDropdowns();
+            const modal = document.getElementById('itemModal');
+            const form = document.getElementById('itemForm');
+            
+            if (itemId) {
+                const item = appData.inventory.find(i => i.id === itemId);
+                document.getElementById('itemModalTitle').textContent = 'Edit Inventory Item';
+                document.getElementById('itemId').value = item.id;
+                document.getElementById('itemName').value = item.name;
+                document.getElementById('itemCategory').value = item.category;
+                document.getElementById('itemQuantity').value = item.quantity;
+                document.getElementById('itemLocation').value = item.location;
+            } else {
+                document.getElementById('itemModalTitle').textContent = 'Add Inventory Item';
+                form.reset();
+                document.getElementById('itemId').value = '';
+            }
+
+            openModal('itemModal');
+        }
+
+        function deleteItem(itemId) {
+            appData.inventory = appData.inventory.filter(i => i.id !== itemId);
+            saveData();
+            renderInventory();
+            showToast('Item deleted');
+        }
+
+        // CATEGORIES MANAGEMENT
+        function openCategoryModal() {
+            renderCategoriesList();
+            openModal('categoryModal');
+        }
+
+        function renderCategoriesList() {
+            const container = document.getElementById('categoriesList');
+            container.innerHTML = '';
+            
+            appData.categories.forEach((cat, index) => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center p-2.5 bg-slate-50 rounded-xl text-sm border border-slate-100";
+                div.innerHTML = `
+                    <span class="font-medium text-slate-700">${escapeHtml(cat)}</span>
+                    <button onclick="removeCategory(${index})" class="text-slate-400 hover:text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addCategory(e) {
+            e.preventDefault();
+            const input = document.getElementById('newCategoryInput');
+            const val = input.value.trim();
+            if (val && !appData.categories.includes(val)) {
+                appData.categories.push(val);
+                saveData();
+                input.value = '';
+                renderCategoriesList();
+                populateCategoriesDropdowns();
+                showToast('Category added');
+            }
+        }
+
+        function removeCategory(index) {
+            appData.categories.splice(index, 1);
+            saveData();
+            renderCategoriesList();
+            populateCategoriesDropdowns();
+            showToast('Category removed');
+        }
+
+        // KIT CREATOR
+        function openKitModal() {
+            const container = document.getElementById('kitItemsSelection');
+            container.innerHTML = '';
+
+            appData.inventory.forEach(item => {
+                const label = document.createElement('label');
+                label.className = "flex items-center space-x-2 text-xs p-1.5 hover:bg-slate-50 rounded-lg cursor-pointer";
+                label.innerHTML = `
+                    <input type="checkbox" value="${escapeHtml(item.name)}" class="kit-item-checkbox rounded text-brand-500 focus:ring-brand-500">
+                    <span class="text-slate-700 font-medium">${escapeHtml(item.name)}</span>
+                `;
+                container.appendChild(label);
+            });
+
+            openModal('kitModal');
+        }
+
+        function saveKit(e) {
+            e.preventDefault();
+            const name = document.getElementById('kitName').value.trim();
+            const checkedBoxes = document.querySelectorAll('.kit-item-checkbox:checked');
+            const selectedItems = Array.from(checkedBoxes).map(cb => cb.value);
+
+            if (selectedItems.length === 0) {
+                showToast('Please select at least one item for the kit', 'error');
+                return;
+            }
+
+            appData.kits.push({
+                id: 'k_' + Date.now(),
+                name,
+                items: selectedItems,
+                quantity: 0
+            });
+
+            saveData();
+            closeModal('kitModal');
+            renderKits();
+            showToast('Assembly kit created');
+        }
+
+        // MANUAL ORDERS
+        function openManualOrderModal() {
+            const select = document.getElementById('manualOrderSelect');
+            select.innerHTML = '';
+            
+            appData.inventory.forEach(item => {
+                select.innerHTML += `<option value="${item.id}">${escapeHtml(item.name)}</option>`;
+            });
+
+            openModal('manualOrderModal');
+        }
+
+        function saveManualOrder(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('manualOrderSelect').value;
+            const qty = parseInt(document.getElementById('manualOrderQty').value) || 1;
+
+            const existing = appData.toOrder.find(o => o.itemId === itemId);
+            if (existing) {
+                existing.orderQty += qty;
+            } else {
+                appData.toOrder.push({ itemId, orderQty: qty });
+            }
+
+            saveData();
+            closeModal('manualOrderModal');
+            renderToOrder();
+            showToast('Manual order added');
+        }
+
+        // SEVA TRIPS
+        function openSevaModal(tripId = null) {
+            const form = document.getElementById('sevaForm');
+            if (tripId) {
+                const trip = appData.sevaTrips.find(t => t.id === tripId);
+                document.getElementById('sevaModalTitle').textContent = 'Edit Seva Trip';
+                document.getElementById('sevaId').value = trip.id;
+                document.getElementById('sevaVolunteer').value = trip.volunteer;
+                document.getElementById('sevaDeparture').value = trip.departure;
+                document.getElementById('sevaReturn').value = trip.return;
+                document.getElementById('sevaTicketDetails').value = trip.ticketDetails;
+            } else {
+                document.getElementById('sevaModalTitle').textContent = 'Log Seva Trip';
+                form.reset();
+                document.getElementById('sevaId').value = '';
+            }
+            openModal('sevaModal');
+        }
+
+        function saveSevaTrip(e) {
+            e.preventDefault();
+            const id = document.getElementById('sevaId').value;
+            const volunteer = document.getElementById('sevaVolunteer').value.trim();
+            const departure = document.getElementById('sevaDeparture').value;
+            const returnDate = document.getElementById('sevaReturn').value;
+            const ticketDetails = document.getElementById('sevaTicketDetails').value.trim();
+
+            if (id) {
+                const trip = appData.sevaTrips.find(t => t.id === id);
+                if (trip) {
+                    trip.volunteer = volunteer;
+                    trip.departure = departure;
+                    trip.return = returnDate;
+                    trip.ticketDetails = ticketDetails;
+                }
+            } else {
+                appData.sevaTrips.push({
+                    id: 's_' + Date.now(),
+                    volunteer,
+                    departure,
+                    return: returnDate,
+                    ticketDetails
+                });
+            }
+
+            saveData();
+            closeModal('sevaModal');
+            renderSevaTrips();
+            showToast(id ? 'Trip log updated' : 'Seva trip logged');
+        }
+
+        function deleteSevaTrip(tripId) {
+            appData.sevaTrips = appData.sevaTrips.filter(t => t.id !== tripId);
+            saveData();
+            renderSevaTrips();
+            showToast('Trip log deleted');
+        }
+
+        // DATA EXPORT / IMPORT
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `Fiji_Admin_Backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(dlAnchorElem);
+            dlAnchorElem.click();
+            dlAnchorElem.remove();
+        }
+
+        function importData() {
+            const fileInput = document.getElementById('importFileInput');
+            if (!fileInput.files.length) {
+                showToast('Please select a JSON file to import', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && parsed.inventory && parsed.categories) {
+                        appData = parsed;
+                        saveData();
+                        closeModal('backupModal');
+                        renderCurrentStockTab();
+                        showToast('Data restored successfully!');
+                    } else {
+                        showToast('Invalid backup file format', 'error');
+                    }
+                } catch(err) {
+                    showToast('Error reading backup file', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Generic Modal Helpers
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Utility: Sanitizer
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+
+        // Initialize application on page load
+        window.onload = function() {
+            loadData();
+            switchMainModule('stock');
+        };
+    </script>
+</body>
+</html>

@@ -15,7 +15,15 @@
 // Enable Firestore and allow only authenticated users access using Firestore security rules.
 // This application uses anonymous authentication when enabled; for shared multi-device data,
 // set a strong shared workspace ID AND implement real sign-in/access controls in production.
-const FIREBASE_CONFIG = null; // e.g. {apiKey:'...',authDomain:'...',projectId:'...',appId:'...'}
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBxpZ-8bBd3Aic4b2JS47uA-OrTDvLjO3w",
+  authDomain: "fiji-administration.firebaseapp.com",
+  projectId: "fiji-administration",
+  storageBucket: "fiji-administration.firebasestorage.app",
+  messagingSenderId: "826878054210",
+  appId: "1:826878054210:web:16af88c1597e937dec42db",
+  measurementId: "G-THF9HZ0369"
+};
 const WORKSPACE_ID = 'mandir-seva-hub';
 const STORAGE_KEY='fiji-admin-v1';
 const defaults={categories:['Pooja Supplies','Mala & Kanthi','Murtis & Frames','Electronics'],inventory:[{id:'1',name:'Cotton Wicks',category:'Pooja Supplies',location:'Cupboard A',qty:45,min:20}],kits:[{id:'k1',name:'Ghar Sabha Kit',count:3,items:[{id:'1',qty:5}]}],orders:[{id:'o1',itemId:'1',name:'Cotton Wicks',qty:50}],flights:[{id:'f1',name:'Raj Patel',departure:'2026-11-05',returnDate:'2026-11-20',details:'Flight QF151, PNR: XYZ123'}],tripDetails:[{id:'t1',dateTitle:'12 Oct 26',dateVal:'2026-10-12',attendees:['Raj Patel','Kirit Shah'],description:'Mandir deep clean and audio check.',stockUsed:[],reported:false}],projects:[{id:'p1',name:'Mandir Sound Upgrade',dates:'Oct - Nov 26',isOngoing:false,details:'Replace main amplifier rack.',notes:'Speakers ordered.'}]};
